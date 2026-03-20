@@ -19,13 +19,24 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb x11-utils
+
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install selenium pytest pytest-html requests webdriver-manager playwright
 
-      - name: Install Playwright browsers
-        run: playwright install chromium --with-deps
+      - name: Install Playwright browsers (with retries)
+        run: |
+          for i in {1..3}; do
+            playwright install chromium --with-deps && break || sleep 10
+          done
 
       - name: Run API tests
         run: |
